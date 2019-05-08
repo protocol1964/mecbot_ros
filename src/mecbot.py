@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-import serial, sys
+import serial, sys, re
 from std_msgs.msg import Int32
 from geometry_msgs.msg import Twist
 
@@ -19,6 +19,9 @@ def cmd_vel_callback(msg):
     g_vcx_val = msg.linear.x
     g_vcr_val = msg.angular.z
 
+def str2int(string):
+    return int(string)
+
 rospy.init_node("mecbot")
 cmd_vel_sub = rospy.Subscriber("cmd_vel", Twist, cmd_vel_callback)
 rate = rospy.Rate(10)
@@ -33,7 +36,9 @@ ser.reset_input_buffer()
 ser.reset_output_buffer()
 
 while not rospy.is_shutdown():
-    print write_command("ME")
+    encorder_data_raw = write_command("ME")
+    encorder_data = map(str2int, re.findall("[-]?\d+", encorder_data_raw))
+    print(encorder_data)
 
     vcx_buf = g_vcx_val
     vcr_buf = g_vcr_val
