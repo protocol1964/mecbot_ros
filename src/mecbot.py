@@ -36,9 +36,9 @@ ser.reset_input_buffer()
 ser.reset_output_buffer()
 
 while not rospy.is_shutdown():
-    encorder_data_raw = write_command("ME")
-    encorder_data = map(str2int, re.findall("[-]?\d+", encorder_data_raw))
-    print(encorder_data)
+    encoder_data_raw = write_command("ME")
+    encoder_data = map(str2int, re.findall("[-]?\d+", encoder_data_raw))
+    print(encoder_data)
 
     vcx_buf = g_vcx_val
     vcr_buf = g_vcr_val
