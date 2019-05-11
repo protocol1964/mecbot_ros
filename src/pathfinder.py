@@ -16,11 +16,10 @@ def cmd_vel_callback(msg):
 
 
 def main():
-    rospy.init_node("mecbot")
+    rospy.init_node("pathfinder")
     cmd_vel_sub = rospy.Subscriber("cmd_vel", Twist, cmd_vel_callback)
     rate = rospy.Rate(30)
     mb = mecbot.Mecbot()
-    mb.control_rotation()
 
     vcx_last = 0.0
     vcr_last = 0.0
