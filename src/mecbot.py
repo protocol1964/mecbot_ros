@@ -92,6 +92,9 @@ class Mecbot:
         """
 
         responce = self.__write("MEV")
+        if not re.search("\$MEV:", responce):
+            raise MecbotMeasureError()
+
         search_result = map(float, re.findall("([-]?\d+\.\d+|[-]?\d)", responce))
 
         if len(search_result) < 4:
