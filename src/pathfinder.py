@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 import rospy
 import mecbot
-from std_msgs.msg import *
 from geometry_msgs.msg import Twist
 
 g_vcx_val = 0.0
 g_vcr_val = 0.0
+
 
 def cmd_vel_callback(msg):
     global g_vcx_val
@@ -14,11 +14,13 @@ def cmd_vel_callback(msg):
     g_vcx_val = msg.linear.x
     g_vcr_val = msg.angular.z
 
+
 def main():
     rospy.init_node("mecbot")
     cmd_vel_sub = rospy.Subscriber("cmd_vel", Twist, cmd_vel_callback)
     rate = rospy.Rate(30)
     mb = mecbot.Mecbot()
+    mb.control_rotation()
 
     vcx_last = 0.0
     vcr_last = 0.0
@@ -41,6 +43,7 @@ def main():
 
         rate.sleep()
     rospy.spin()
+
 
 if __name__ == "__main__":
     main()
