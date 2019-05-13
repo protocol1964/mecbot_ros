@@ -2,9 +2,15 @@
 # -*- coding: utf-8 -*-
 import serial
 import re
+import math
 
 
 class Mecbot:
+    TREAD = 0.47
+    PULSE_OF_ROTATION = 120000
+    DIAMETER = 0.254
+    LENGTH_OF_ROTATION = math.pi * DIAMETER
+
     # private
     def __init__(self, dev="/dev/ttyUSB0", baud=57600):
         """Mecbot wrapper
@@ -81,7 +87,7 @@ class Mecbot:
 
         if speed < -10 or 10 < speed:
             raise MecbotRangeError("speed")
-        
+
         self.__write("VCR" + str(round(speed, 3)))
     
     def measure_speed(self):
@@ -94,13 +100,51 @@ class Mecbot:
         responce = self.__write("MEV")
         if not re.search("\$MEV:", responce):
             raise MecbotMeasureError()
-
-        search_result = map(float, re.findall("([-]?\d+\.\d+|[-]?\d)", responce))
+        search_result = map(float, re.findall("([-]?\d+\.\d+|[-]?\d+)", responce))
 
         if len(search_result) < 4:
             raise MecbotMeasureError()
         else:
-            return search_result[0], search_result[1]
+            return search_result[0], search_result[1], search_result[2], search_result[3]
+
+    def measure_pulse(self):
+        """Measure the encoder pulse of both wheels
+
+        :return int: Pulse of both wheels [m/s]
+        :raises MecbotMeasureError: Measure failed.
+        """
+
+        responce = self.__write("ME")
+        if not re.search("\$ME:", responce):
+            raise MecbotMeasureError()
+
+        search_result = map(int, re.findall("([-]?\d+\.\d+|[-]?\d+)", responce))
+
+        if len(search_result) < 4:
+            raise MecbotMeasureError()
+        else:
+            return search_result[0], search_result[1], search_result[2], search_result[3]
+
+    def calc_pos(self, init_x, init_y, init_theta, pulse_r, pulse_l):
+        """Calculate Mecbot odometry
+
+        :param float init_x:
+        :param float init_y:
+        :param float init_theta:
+        :param int pulse_r:
+        :param int pulse_l:
+        :return:
+        """
+        delta_x_r = float(pulse_r) / self.PULSE_OF_ROTATION * self.LENGTH_OF_ROTATION
+        delta_x_l = float(pulse_l) / self.PULSE_OF_ROTATION * self.LENGTH_OF_ROTATION
+        delta_x = (delta_x_r + delta_x_l) / 2
+        delta_theta = (delta_x_r - delta_x_l) / self.TREAD
+
+        theta = delta_theta + init_theta
+        x = delta_x * math.cos(theta) + init_x
+        y = delta_x * math.sin(theta) + init_y
+
+        return x, y, theta
 
 
 class MecbotError(Exception):

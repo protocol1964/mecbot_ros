@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import rospy
+import tf
 import mecbot
 from geometry_msgs.msg import Twist
 
@@ -19,16 +20,32 @@ def main():
     rospy.init_node("pathfinder")
     cmd_vel_sub = rospy.Subscriber("cmd_vel", Twist, cmd_vel_callback)
     rate = rospy.Rate(30)
-    mb = mecbot.Mecbot()
+    mb = mecbot.Mecbot("/dev/ttyUSB1", 57600)
+    br = tf.TransformBroadcaster()
 
     vcx_last = 0.0
     vcr_last = 0.0
 
+    last_x = 0.0
+    last_y = 0.0
+    last_theta = 0.0
+
     while not rospy.is_shutdown():
+        pulse_count = None
         try:
-            print mb.measure_speed()
+            pulse_count = mb.measure_pulse()
         except mecbot.MecbotMeasureError:
             pass
+        else:
+            calc_result = mb.calc_pos(last_x, last_y, last_theta, pulse_count[2], pulse_count[3])
+            last_x = calc_result[0]
+            last_y = calc_result[1]
+            last_theta = calc_result[2]
+            br.sendTransform((last_x, last_y, 0),
+                             tf.transformations.quaternion_from_euler(0, 0, last_theta),
+                             rospy.Time.now(),
+                             "pathfinder",
+                             "map")
 
         vcx_buf = g_vcx_val
         vcr_buf = g_vcr_val
