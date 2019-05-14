@@ -138,7 +138,7 @@ class Mecbot:
         delta_x_r = float(pulse_r) / self.PULSE_OF_ROTATION * self.LENGTH_OF_ROTATION
         delta_x_l = float(pulse_l) / self.PULSE_OF_ROTATION * self.LENGTH_OF_ROTATION
         delta_x = (delta_x_r + delta_x_l) / 2
-        delta_theta = (delta_x_r - delta_x_l) / self.TREAD
+        delta_theta = (delta_x_l - delta_x_r) / self.TREAD
 
         theta = delta_theta + init_theta
         x = delta_x * math.cos(theta) + init_x

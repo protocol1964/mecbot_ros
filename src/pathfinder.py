@@ -3,6 +3,7 @@
 import rospy
 import tf
 import mecbot
+import math
 from geometry_msgs.msg import Twist
 
 g_vcx_val = 0.0
@@ -20,8 +21,29 @@ def main():
     rospy.init_node("pathfinder")
     cmd_vel_sub = rospy.Subscriber("cmd_vel", Twist, cmd_vel_callback)
     rate = rospy.Rate(30)
-    mb = mecbot.Mecbot("/dev/ttyUSB1", 57600)
+    mb = mecbot.Mecbot("/dev/ttyUSB0", 57600)
     br = tf.TransformBroadcaster()
+
+    br.sendTransform((1, 1, 0),
+                     tf.transformations.quaternion_from_euler(0, 0, 0),
+                     rospy.Time.now(),
+                     "odom",
+                     "map")
+    br.sendTransform((0, 0, 0),
+                     tf.transformations.quaternion_from_euler(0, 0, 0),
+                     rospy.Time.now(),
+                     "base_footprint",
+                     "odom")
+    br.sendTransform((0, 0, 0.254 / 2),
+                     tf.transformations.quaternion_from_euler(0, 0, 0),
+                     rospy.Time.now(),
+                     "base_link",
+                     "base_footprint")
+    br.sendTransform((0, 0, 0.16),
+                     tf.transformations.quaternion_from_euler(0, 0, 0),
+                     rospy.Time.now(),
+                     "laser",
+                     "base_link")
 
     vcx_last = 0.0
     vcr_last = 0.0
@@ -41,11 +63,22 @@ def main():
             last_x = calc_result[0]
             last_y = calc_result[1]
             last_theta = calc_result[2]
+
             br.sendTransform((last_x, last_y, 0),
                              tf.transformations.quaternion_from_euler(0, 0, last_theta),
                              rospy.Time.now(),
-                             "pathfinder",
-                             "map")
+                             "base_footprint",
+                             "odom")
+            br.sendTransform((0, 0, 0.254 / 2),
+                             tf.transformations.quaternion_from_euler(0, 0, 0),
+                             rospy.Time.now(),
+                             "base_link",
+                             "base_footprint")
+            br.sendTransform((0, 0, 0.16),
+                             tf.transformations.quaternion_from_euler(0, 0, math.radians(180)),
+                             rospy.Time.now(),
+                             "laser",
+                             "base_link")
 
         vcx_buf = g_vcx_val
         vcr_buf = g_vcr_val
