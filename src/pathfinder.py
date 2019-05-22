@@ -24,7 +24,7 @@ def main():
     mb = mecbot.Mecbot("/dev/ttyUSB0", 57600)
     br = tf.TransformBroadcaster()
 
-    br.sendTransform((1, 1, 0),
+    br.sendTransform((0, 0, 0),
                      tf.transformations.quaternion_from_euler(0, 0, 0),
                      rospy.Time.now(),
                      "odom",
@@ -34,12 +34,12 @@ def main():
                      rospy.Time.now(),
                      "base_footprint",
                      "odom")
-    br.sendTransform((0, 0, 0.254 / 2),
+    br.sendTransform((0, 0, 0),
                      tf.transformations.quaternion_from_euler(0, 0, 0),
                      rospy.Time.now(),
                      "base_link",
                      "base_footprint")
-    br.sendTransform((0, 0, 0.16),
+    br.sendTransform((0, 0, 0.254),
                      tf.transformations.quaternion_from_euler(0, 0, 0),
                      rospy.Time.now(),
                      "laser",
@@ -59,7 +59,7 @@ def main():
         except mecbot.MecbotMeasureError:
             pass
         else:
-            calc_result = mb.calc_pos(last_x, last_y, last_theta, pulse_count[2], pulse_count[3])
+            calc_result = mb.calc_pos(last_x, last_y, last_theta, pulse_count[2] * -1, pulse_count[3] * -1)
             last_x = calc_result[0]
             last_y = calc_result[1]
             last_theta = calc_result[2]
@@ -69,19 +69,19 @@ def main():
                              rospy.Time.now(),
                              "base_footprint",
                              "odom")
-            br.sendTransform((0, 0, 0.254 / 2),
+            br.sendTransform((0, 0, 0),
                              tf.transformations.quaternion_from_euler(0, 0, 0),
                              rospy.Time.now(),
                              "base_link",
                              "base_footprint")
-            br.sendTransform((0, 0, 0.16),
-                             tf.transformations.quaternion_from_euler(0, 0, math.radians(180)),
+            br.sendTransform((0, 0, 0.254),
+                             tf.transformations.quaternion_from_euler(0, 0, 0),
                              rospy.Time.now(),
                              "laser",
                              "base_link")
 
         vcx_buf = g_vcx_val
-        vcr_buf = g_vcr_val
+        vcr_buf = g_vcr_val * -1
 
         if vcx_buf != vcx_last:
             mb.control_forward_speed(vcx_buf)
