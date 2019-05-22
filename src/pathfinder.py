@@ -29,21 +29,6 @@ def main():
                      rospy.Time.now(),
                      "odom",
                      "map")
-    br.sendTransform((0, 0, 0),
-                     tf.transformations.quaternion_from_euler(0, 0, 0),
-                     rospy.Time.now(),
-                     "base_footprint",
-                     "odom")
-    br.sendTransform((0, 0, 0),
-                     tf.transformations.quaternion_from_euler(0, 0, 0),
-                     rospy.Time.now(),
-                     "base_link",
-                     "base_footprint")
-    br.sendTransform((0, 0, 0.254),
-                     tf.transformations.quaternion_from_euler(0, 0, 0),
-                     rospy.Time.now(),
-                     "laser",
-                     "base_link")
 
     vcx_last = 0.0
     vcr_last = 0.0
@@ -51,6 +36,9 @@ def main():
     last_x = 0.0
     last_y = 0.0
     last_theta = 0.0
+
+    pulse_sum_l = 0
+    pulse_sum_r = 0
 
     while not rospy.is_shutdown():
         pulse_count = None
@@ -64,6 +52,9 @@ def main():
             last_y = calc_result[1]
             last_theta = calc_result[2]
 
+            pulse_sum_r += pulse_count[2] * -1
+            pulse_sum_l += pulse_count[3] * -1
+
             br.sendTransform((last_x, last_y, 0),
                              tf.transformations.quaternion_from_euler(0, 0, last_theta),
                              rospy.Time.now(),
@@ -74,6 +65,16 @@ def main():
                              rospy.Time.now(),
                              "base_link",
                              "base_footprint")
+            br.sendTransform((0, -0.182, 0.13),
+                             tf.transformations.quaternion_from_euler(math.radians(90), pulse_sum_r/float(mb.PULSE_OF_ROTATION)*2*math.pi, 0),
+                             rospy.Time.now(),
+                             "right_wheel",
+                             "base_link")
+            br.sendTransform((0, 0.182, 0.13),
+                             tf.transformations.quaternion_from_euler(math.radians(-90), pulse_sum_l/float(mb.PULSE_OF_ROTATION)*2*math.pi, 0),
+                             rospy.Time.now(),
+                             "left_wheel",
+                             "base_link")
             br.sendTransform((0, 0, 0.254),
                              tf.transformations.quaternion_from_euler(0, 0, 0),
                              rospy.Time.now(),
