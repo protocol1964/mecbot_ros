@@ -19,9 +19,12 @@ def cmd_vel_callback(msg):
 
 def main():
     rospy.init_node("pathfinder")
+    rospy.loginfo('Started Pathfinder')
+    device = rospy.get_param('~device', '/dev/ttyUSB0')
     cmd_vel_sub = rospy.Subscriber("cmd_vel", Twist, cmd_vel_callback)
     rate = rospy.Rate(30)
-    mb = mecbot.Mecbot("/dev/ttyUSB0", 57600)
+    mb = mecbot.Mecbot(device, 57600)
+    rospy.loginfo('Connected to Mecbot with path: ' + device)
     br = tf.TransformBroadcaster()
 
     br.sendTransform((0, 0, 0),
@@ -55,31 +58,50 @@ def main():
             pulse_sum_r += pulse_count[2] * -1
             pulse_sum_l += pulse_count[3] * -1
 
+            # Relative coordinates from odom to footprint of base link
+            """
             br.sendTransform((last_x, last_y, 0),
                              tf.transformations.quaternion_from_euler(0, 0, last_theta),
                              rospy.Time.now(),
                              "base_footprint",
                              "odom")
-            br.sendTransform((0, 0, 0),
-                             tf.transformations.quaternion_from_euler(0, 0, 0),
+            """
+            # Relative coordinates from odom to middle point of the wheels (base link)
+            br.sendTransform((last_x, last_y, mb.DIAMETER/2),
+                             tf.transformations.quaternion_from_euler(0, 0, last_theta),
                              rospy.Time.now(),
                              "base_link",
-                             "base_footprint")
-            br.sendTransform((0, -0.182, 0.13),
+                             "odom")
+            # Relative coordinates from base link to right wheel
+            br.sendTransform((0, mb.TREAD / 2 * -1, 0),
                              tf.transformations.quaternion_from_euler(math.radians(90), pulse_sum_r/float(mb.PULSE_OF_ROTATION)*2*math.pi, 0),
                              rospy.Time.now(),
                              "right_wheel",
                              "base_link")
-            br.sendTransform((0, 0.182, 0.13),
+            # Relative coordinates from base link to left wheel
+            br.sendTransform((0, mb.TREAD / 2, 0),
                              tf.transformations.quaternion_from_euler(math.radians(-90), pulse_sum_l/float(mb.PULSE_OF_ROTATION)*2*math.pi, 0),
                              rospy.Time.now(),
                              "left_wheel",
                              "base_link")
-            br.sendTransform((0, 0, 0.254),
+            # Relative coordinates from base link to platform base
+            br.sendTransform((-0.156, 0, -1*mb.DIAMETER/2 + 0.235 + 0.043),
                              tf.transformations.quaternion_from_euler(0, 0, 0),
                              rospy.Time.now(),
-                             "laser",
+                             "platform_base",
                              "base_link")
+            # Relative coordinates from platform base to forward laser
+            br.sendTransform((0.25 - 0.062/2, 0, 0.0525),
+                             tf.transformations.quaternion_from_euler(0, 0, 0),
+                             rospy.Time.now(),
+                             "forward_laser",
+                             "platform_base")
+            # Relative coordinates from platform base to sideways laser
+            br.sendTransform((0.16 + 0.15, 0, 0.8),
+                             tf.transformations.quaternion_from_euler(0, math.radians(90), 0),
+                             rospy.Time.now(),
+                             "sideways_laser",
+                             "platform_base")
 
         vcx_buf = g_vcx_val
         vcr_buf = g_vcr_val * -1

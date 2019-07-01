@@ -1,0 +1,16 @@
+<launch>
+    <node pkg="rviz" name="rviz" type="rviz" />
+    <node pkg="pathfinder" name="testpathfinder" type="pathfinder.py" />
+    <node pkg="teleop_twist_keyboard" name="teleop" type="teleop_twist_keyboard.py" />
+
+    <node pkg="urg_node" name="forward_urg_node" type="urg_node">
+        <param name="frame_id" value="/forward_laser" />
+        <param name="ip_address" value="192.168.0.10" />
+        <remap from="/scan" to="/forward_scan" />
+    </node>
+    <node pkg="urg_node" name="sideways_urg_node" type="urg_node">
+        <param name="frame_id" value="/sideways_laser" />
+        <param name="serial_port" value="/dev/ttyACM0" />
+        <remap from="/scan" to="/sideways_scan" />
+    </node>
+</launch>
