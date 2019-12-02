@@ -1,0 +1,5 @@
+<launch>
+    <!-- Pathfinder -->
+    <node pkg="pathfinder" type="pathfinder.py" name="pathfinder" />
+
+</launch>
