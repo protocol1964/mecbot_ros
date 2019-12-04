@@ -21,14 +21,10 @@ def main():
     rospy.init_node("pathfinder")
     cmd_vel_sub = rospy.Subscriber("cmd_vel", Twist, cmd_vel_callback)
     rate = rospy.Rate(30)
-    mb = mecbot.Mecbot("/dev/ttyUSB0", 57600)
-    br = tf.TransformBroadcaster()
 
-    br.sendTransform((0, 0, 0),
-                     tf.transformations.quaternion_from_euler(0, 0, 0),
-                     rospy.Time.now(),
-                     "odom",
-                     "map")
+    device_path = rospy.get_param("/pathfinder/device", "/dev/ttyUSB0")
+    mb = mecbot.Mecbot(device_path, 57600)
+    br = tf.TransformBroadcaster()
 
     vcx_last = 0.0
     vcr_last = 0.0
@@ -55,16 +51,6 @@ def main():
             pulse_sum_r += pulse_count[2] * -1
             pulse_sum_l += pulse_count[3] * -1
 
-            br.sendTransform((last_x, last_y, 0),
-                             tf.transformations.quaternion_from_euler(0, 0, last_theta),
-                             rospy.Time.now(),
-                             "base_footprint",
-                             "odom")
-            br.sendTransform((0, 0, 0),
-                             tf.transformations.quaternion_from_euler(0, 0, 0),
-                             rospy.Time.now(),
-                             "base_link",
-                             "base_footprint")
             br.sendTransform((0, -0.182, 0.13),
                              tf.transformations.quaternion_from_euler(math.radians(90), pulse_sum_r/float(mb.PULSE_OF_ROTATION)*2*math.pi, 0),
                              rospy.Time.now(),
