@@ -93,11 +93,6 @@ def main():
                              rospy.Time.now(),
                              "left_wheel",
                              "base_link")
-            br.sendTransform((0, 0, 0.254),
-                             tf.transformations.quaternion_from_euler(0, 0, 0),
-                             rospy.Time.now(),
-                             "laser",
-                             "base_link")
 
         vcx_buf = g_vcx_val
         vcr_buf = g_vcr_val * -1

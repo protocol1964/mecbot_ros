@@ -4,4 +4,10 @@
         <param name="device" value="/dev/ttyUSB0" />
     </node>
 
+    <!-- Static tf publisher -->
+    <node pkg="tf" type="static_transform_publisher" name="base_link_to_lidar_base_link_tf_publisher" args="0 0 0.927 0 0 0 base_link lidar_base_link 100" />
+    <node pkg="tf" type="static_transform_publisher" name="lidar_base_link_to_lidar_tf_publisher" args="0 0 0.059 0 0 0 lidar_base_link laser 100" />
+    <node pkg="tf" type="static_transform_publisher" name="lidar_base_link_to_imu_link_tf_publisher" args="0 0 0.006 3.141592 0 0 lidar_base_link imu_link 100" />
+
+
 </launch>
