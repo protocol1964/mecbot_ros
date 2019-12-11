@@ -1,5 +1,7 @@
 <launch>
     <!-- Pathfinder -->
-    <node pkg="pathfinder" type="pathfinder.py" name="pathfinder" />
+    <node pkg="pathfinder" type="pathfinder.py" name="pathfinder">
+        <param name="device" value="/dev/ttyUSB0" />
+    </node>
 
 </launch>

@@ -113,7 +113,6 @@ class Mecbot:
         :return int: Pulse of both wheels [m/s]
         :raises MecbotMeasureError: Measure failed.
         """
-
         responce = self.__write("ME")
         if not re.search("\$ME:", responce):
             raise MecbotMeasureError()
